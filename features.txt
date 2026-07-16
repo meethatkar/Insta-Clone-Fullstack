@@ -1,0 +1,18 @@
+AUTH:-
+    Register,
+    login,
+    logout,
+    **reset password,
+    **delete account
+POST:-
+    create,
+    like,
+    save,
+    **comment,
+    **share,
+    **edit
+USER:-
+    following
+    followers
+    **close friend
+    **saved

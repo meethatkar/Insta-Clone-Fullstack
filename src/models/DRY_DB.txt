@@ -1,0 +1,12 @@
+USER:-
+    username,
+    password,
+    email,
+    gender,
+    bio.
+    profilePicture
+POST:-
+    caption,
+    postImage,
+    createdBy,
+    createdAt
