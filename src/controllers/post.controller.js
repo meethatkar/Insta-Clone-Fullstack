@@ -3,6 +3,7 @@ const { toFile } = require("@imagekit/nodejs");
 const postModel = require("../models/post.model");
 const likeModel = require("../models/like.model");
 const followModel = require("../models/follow.model");
+const savedModel = require("../models/saved.model");
 
 const imageKit = new ImageKit({
   privateKey: process.env.IMAGE_KIT_KEY,
@@ -80,12 +81,21 @@ async function getUserFeed(req, res) {
         .populate("createdBy")
         .lean()
     ).map(async (post) => {
+      //  ***** Logic is check requrste user liked the post of not
       const isLiked = await likeModel.findOne({
         likedPost: post._id,
         likedBy: req.user.username,
       });
       post.isLiked = !!isLiked;
 
+      //  ***** Logic to check requrste user saved the post or not.
+      const isSaved = await savedModel.findOne({
+        savedBy: req.user.username,
+        savedPost: post._id,
+      });
+      post.isSaved = !!isSaved;
+
+      // ***** Logic to check requrste user follows post createdBy user or not.
       const isFollowed = await followModel.findOne({
         follower: req.user.username,
         followee: post.createdBy.username,
