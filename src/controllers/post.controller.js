@@ -4,6 +4,7 @@ const postModel = require("../models/post.model");
 const likeModel = require("../models/like.model");
 const followModel = require("../models/follow.model");
 const savedModel = require("../models/saved.model");
+const commentModel = require("../models/comment.model");
 
 const imageKit = new ImageKit({
   privateKey: process.env.IMAGE_KIT_KEY,
@@ -87,6 +88,18 @@ async function getUserFeed(req, res) {
         likedBy: req.user.username,
       });
       post.isLiked = !!isLiked;
+
+      // ****** Get total Like count
+      const likeCount = await likeModel.countDocuments({
+        likedPost: post._id
+      });
+      post.likeCount = likeCount;
+
+      // ***** Get total comment count
+      const commentCount = await commentModel.countDocuments({
+        commentedPost: post._id
+      });
+      post.commentCount = commentCount;
 
       //  ***** Logic to check requrste user saved the post or not.
       const isSaved = await savedModel.findOne({

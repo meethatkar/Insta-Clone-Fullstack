@@ -1,14 +1,6 @@
 const likeModel = require("../models/like.model");
 const postModel = require("../models/post.model");
 
-async function checkPostExists(id) {
-
-}
-
-async function checkIsAlreadyLiked(username, postId, isLikedApi) {
-
-}
-
 async function likePostController(req, res) {
     const username = req.user.username;
     const postId = req.params.postId;
@@ -75,7 +67,30 @@ async function unlikePostController(req, res) {
 
 }
 
+// async function getLikeCountByPostId(req, res) {
+//     const postId = req.params.postId;
+
+//     const isPostCreated = await postModel.findById(postId);
+
+//     if (!isPostCreated) {
+//         return res.status(404).json({
+//             message: "post not found"
+//         })
+//     }
+
+//     const result = await likeModel.countDocuments({
+//         likedPost: postId
+//     })
+
+//     res.status(200).json({
+//         message: "post liked fetched successfullly",
+//         result
+//     })
+
+// }
+
 module.exports = {
     likePostController,
-    unlikePostController
+    unlikePostController,
+    // getLikeCountByPostId
 }

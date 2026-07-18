@@ -118,8 +118,16 @@ async function getLoggedInUserController(req, res) {
   });
 }
 
+async function logoutController(req, res) {
+  res.clearCookie("jwt_token");
+  res.status(201).json({
+    message: "user logged out successfully"
+  })
+}
+
 module.exports = {
   registerController,
   loginController,
   getLoggedInUserController,
+  logoutController
 };
