@@ -38,7 +38,12 @@ async function registerController(req, res) {
     { expiresIn: "1d" },
   );
 
-  res.cookie("jwt_token", token);
+  res.cookie("jwt_token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 24 * 60 * 60 * 1000,
+  });
 
   res.status(201).json({
     message: "registration successfull",
@@ -85,7 +90,12 @@ async function loginController(req, res) {
     { expiresIn: "1d" },
   );
 
-  res.cookie("jwt_token", token);
+  res.cookie("jwt_token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 24 * 60 * 60 * 1000,
+  });
 
   res.status(201).json({
     message: "login success",
