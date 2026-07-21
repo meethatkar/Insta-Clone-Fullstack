@@ -15,4 +15,11 @@ commentRoute.post(
   commentController.createUserComments,
 );
 
+/**
+ * @route /api/post/comment/:postId
+ * @description get latest 3 comments with your comment(if any)
+ * @access Private
+ */
+commentRoute.get("/comment/:postId", identifyUser, commentController.getPostComments);
+
 module.exports = commentRoute;

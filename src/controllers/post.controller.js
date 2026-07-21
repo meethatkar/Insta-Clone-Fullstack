@@ -82,7 +82,7 @@ async function getUserFeed(req, res) {
         .populate("createdBy")
         .lean()
     ).map(async (post) => {
-      //  ***** Logic is check requrste user liked the post of not
+      //  ***** Logic is check requested user liked the post of not
       const isLiked = await likeModel.findOne({
         likedPost: post._id,
         likedBy: req.user.username,
@@ -101,14 +101,14 @@ async function getUserFeed(req, res) {
       });
       post.commentCount = commentCount;
 
-      //  ***** Logic to check requrste user saved the post or not.
+      //  ***** Logic to check requested user saved the post or not.
       const isSaved = await savedModel.findOne({
         savedBy: req.user.username,
         savedPost: post._id,
       });
       post.isSaved = !!isSaved;
 
-      // ***** Logic to check requrste user follows post createdBy user or not.
+      // ***** Logic to check requested user follows post createdBy user or not.
       const isFollowed = await followModel.findOne({
         follower: req.user.username,
         followee: post.createdBy.username,
