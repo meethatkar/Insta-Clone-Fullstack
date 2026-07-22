@@ -1,6 +1,7 @@
 const ImageKit = require("@imagekit/nodejs");
 const { toFile } = require("@imagekit/nodejs");
 const postModel = require("../models/post.model");
+const accountModel = require("../models/auth.model");
 const likeModel = require("../models/like.model");
 const followModel = require("../models/follow.model");
 const savedModel = require("../models/saved.model");
@@ -34,9 +35,17 @@ async function createPostController(req, res) {
 
 // [protected]
 async function getUserAllPost(req, res) {
-  let decoded = req.user;
+  let { username } = req.params;
+  const user = await accountModel.findOne({ username });
+
+  if (!user) {
+    return res.status(404).json({
+      message: "user not found",
+    });
+  }
+
   const posts = await postModel.find({
-    createdBy: decoded.user,
+    createdBy: user._id,
   });
 
   res.status(200).json({
@@ -91,13 +100,13 @@ async function getUserFeed(req, res) {
 
       // ****** Get total Like count
       const likeCount = await likeModel.countDocuments({
-        likedPost: post._id
+        likedPost: post._id,
       });
       post.likeCount = likeCount;
 
       // ***** Get total comment count
       const commentCount = await commentModel.countDocuments({
-        commentedPost: post._id
+        commentedPost: post._id,
       });
       post.commentCount = commentCount;
 
