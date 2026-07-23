@@ -82,8 +82,8 @@ async function unfollowUserController(req, res) {
 }
 
 async function updateFollowStatusController(req, res) {
-  const followerName = req.user.username;
-  const followeeName = req.params.username;
+  const followerName = req.params.username;
+  const followeeName = req.user.username;
   const { status } = req.body;
 
   const isFolloweeExists = await userModel.findOne({
@@ -129,11 +129,13 @@ async function getFollowCount(req, res) {
   const { username } = req.params;
 
   const followeeCount = await followModel.countDocuments({
-    followee: username,
+    follower: username,
+    status: "accepted",
   });
 
   const followerCount = await followModel.countDocuments({
-    follower: username,
+    followee: username,
+    status: "accepted",
   });
 
   console.log(followerCount);
@@ -146,9 +148,54 @@ async function getFollowCount(req, res) {
   });
 }
 
+async function getFollowingUserList(req, res) {
+  const { username } = req.params;
+
+  const followeeList = await followModel.find({
+    follower: username,
+    status: "accepted",
+  });
+
+  res.status(200).json({
+    message: "fetched following Data",
+    followeeList,
+  });
+}
+
+async function getFollowerUserList(req, res) {
+  const { username } = req.params;
+
+  const followerList = await followModel.find({
+    followee: username,
+    status: "accepted",
+  });
+
+  res.status(200).json({
+    message: "fetched follower Data",
+    followerList,
+  });
+}
+
+async function getFollowPendingUserList(req, res) {
+  const { username } = req.params;
+
+  const followPendingList = await followModel.find({
+    followee: username,
+    status: "pending",
+  });
+
+  res.status(200).json({
+    message: "fetched follow pending Data",
+    followPendingList,
+  });
+}
+
 module.exports = {
   followUserController,
   unfollowUserController,
   updateFollowStatusController,
   getFollowCount,
+  getFollowingUserList,
+  getFollowerUserList,
+  getFollowPendingUserList,
 };

@@ -48,6 +48,39 @@ followRoute.get(
   followController.getFollowCount,
 );
 
+/**
+ * @route GET /api/users/followingList/:username
+ * @description get following user list
+ * @access Private
+ */
+followRoute.get(
+  "/followingList/:username",
+  identifyUser,
+  followController.getFollowingUserList,
+);
+
+/**
+ * @route GET /api/users/followerList/:username
+ * @description get follower user list
+ * @access Private
+ */
+followRoute.get(
+  "/followerList/:username",
+  identifyUser,
+  followController.getFollowerUserList,
+);
+
+/**
+ * @route GET /api/users/followPendingList/:username
+ * @description get following user list
+ * @access Private
+ */
+followRoute.get(
+  "/followPendingList/:username",
+  identifyUser,
+  followController.getFollowPendingUserList,
+);
+
 // TODO:- API To get list of followers and following
 
 module.exports = followRoute;
