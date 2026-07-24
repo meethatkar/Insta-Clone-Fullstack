@@ -138,9 +138,6 @@ async function getFollowCount(req, res) {
     status: "accepted",
   });
 
-  console.log(followerCount);
-  console.log(followeeCount);
-
   res.status(200).json({
     message: "fetched following and follower count",
     followeeCount,

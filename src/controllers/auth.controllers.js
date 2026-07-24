@@ -1,6 +1,12 @@
 const bcrypt = require("bcrypt");
 const accountModel = require("../models/auth.model");
 const jwt = require("jsonwebtoken");
+const ImageKit = require("@imagekit/nodejs");
+const { toFile } = require("@imagekit/nodejs");
+
+const imageKit = new ImageKit({
+  privateKey: process.env.IMAGE_KIT_KEY,
+});
 
 async function registerController(req, res) {
   const { username, password, email, bio, gender, profilePicture } = req.body;
@@ -135,9 +141,56 @@ async function logoutController(req, res) {
   })
 }
 
+async function editProfile(req, res) {
+  const username_token = res.user.username;
+
+
+  const oldData = await accountModel.findOne({
+    username: username_token
+  })
+
+  if (!oldData) {
+    return res.status(404).json({
+      message: "user not found"
+    })
+  }
+
+  const { username, bio } = req.body;
+
+  const updateObject = {};
+
+  if (username && username.trim() !== "") {
+    updateObject.username = username;
+  }
+
+  if (bio && bio.trim() !== "") {
+    updateObject.bio = bio;
+  }
+
+  if (req.file) {
+    const uploadedFile = await imageKit.files.upload({
+      file: await toFile(Buffer.from(req.file.buffer), "file"),
+      fileName: "updated-profile-image",
+      folder: "cohort-imstagram"
+    })
+    updateObject.profilePicture = uploadedFile.url;
+  }
+
+
+  const update = await accountModel.findByIdAndUpdate(oldData._id, { updateObject }, {
+    runValidators: true
+  })
+
+  res.status(200).json({
+    message: "profile updated successfully",
+    data: update
+  })
+}
+
 module.exports = {
   registerController,
   loginController,
   getLoggedInUserController,
-  logoutController
+  logoutController,
+  editProfile
 };

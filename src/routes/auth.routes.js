@@ -3,6 +3,7 @@ const authController = require("../controllers/auth.controllers");
 const identifyUser = require("../middlewares/auth.middleware");
 const authRouter = express.Router();
 
+
 /**
  * @route POST /api/auth/register
  * @access Public
@@ -26,10 +27,26 @@ authRouter.get(
   authController.getLoggedInUserController,
 );
 
+/**
+ * @route POST /api/auth/logout
+ * @description logout user
+ * @access Private
+ */
 authRouter.post(
   "/logout",
   identifyUser,
   authController.logoutController,
 );
+
+/**
+ * @route POST /api/auth/edit-profile
+ * @description edit user profile
+ * @access Private
+ */
+authRouter.put(
+  "/edit-profile",
+  identifyUser,
+  authController.editProfile
+)
 
 module.exports = authRouter;
