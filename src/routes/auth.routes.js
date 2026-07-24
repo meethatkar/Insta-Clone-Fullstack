@@ -1,6 +1,10 @@
 const express = require("express");
 const authController = require("../controllers/auth.controllers");
 const identifyUser = require("../middlewares/auth.middleware");
+const multer = require("multer");
+
+const upload = multer({ storage: multer.memoryStorage() });
+
 const authRouter = express.Router();
 
 
@@ -45,6 +49,7 @@ authRouter.post(
  */
 authRouter.put(
   "/edit-profile",
+  upload.single("profileImg"),
   identifyUser,
   authController.editProfile
 )

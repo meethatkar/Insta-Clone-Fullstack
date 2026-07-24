@@ -119,8 +119,14 @@ async function getLoggedInUserController(req, res) {
   const username = req.user.username;
 
   const accountData = await accountModel.findOne({
-    username,
+    username: username,
   });
+
+  if (!accountData) {
+    return res.status(404).json({
+      message: "user not found"
+    })
+  }
 
   res.status(200).json({
     message: "data fetched successfully",
@@ -142,8 +148,7 @@ async function logoutController(req, res) {
 }
 
 async function editProfile(req, res) {
-  const username_token = res.user.username;
-
+  const username_token = req.user.username;
 
   const oldData = await accountModel.findOne({
     username: username_token
@@ -171,15 +176,31 @@ async function editProfile(req, res) {
     const uploadedFile = await imageKit.files.upload({
       file: await toFile(Buffer.from(req.file.buffer), "file"),
       fileName: "updated-profile-image",
-      folder: "cohort-imstagram"
+      folder: "cohort-instagram"
     })
     updateObject.profilePicture = uploadedFile.url;
   }
 
-
-  const update = await accountModel.findByIdAndUpdate(oldData._id, { updateObject }, {
+  const update = await accountModel.findByIdAndUpdate(oldData._id, updateObject, {
+    new: true,
     runValidators: true
   })
+
+  const token = jwt.sign(
+    {
+      user: update._id,
+      username: update.username,
+    },
+    process.env.JWT_TOKEN,
+    { expiresIn: "1d" },
+  );
+
+  res.cookie("jwt_token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 24 * 60 * 60 * 1000,
+  });
 
   res.status(200).json({
     message: "profile updated successfully",
