@@ -119,8 +119,8 @@ async function getUserFeed(req, res) {
 
       // ***** Logic to check requested user follows post createdBy user or not.
       const isFollowed = await followModel.findOne({
-        follower: req.user.username,
-        followee: post.createdBy.username,
+        follower: req.user.user,
+        followee: post.createdBy._id,
       });
       post.isFollowed = !!isFollowed;
       return post;

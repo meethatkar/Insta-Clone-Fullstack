@@ -220,11 +220,15 @@ async function getFollowPendingList(req, res) {
     followee: user._id,
     status: "pending",
   }).populate("follower", "username profilePicture createdAt");
+  console.log("PENDING LIST:: ", followPendingList);
 
   const formattedList = followPendingList.map(item => ({
     ...item.follower.toObject(),
     followDate: item.createdAt
   }));
+
+  console.log("FORMATTED LIST:: ", formattedList);
+
 
   res.status(200).json({
     message: "fetched follow pending Data",
