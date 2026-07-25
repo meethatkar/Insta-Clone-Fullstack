@@ -2,31 +2,33 @@ const followModel = require("../models/follow.model");
 const userModel = require("../models/auth.model");
 
 async function followUserController(req, res) {
-  const followerName = req.user.username;
+  const followerId = req.user.user;
   const followeeName = req.params.username;
 
-  // 1st Check:- can't follow yourself
-  if (followeeName == followerName) {
-    return res.status(409).json({
-      message: "you can't follow yourself",
-    });
-  }
-
-  // 2nd Check:-  checking user (followee) exists or not ?
-  const isFolloweeExists = await userModel.findOne({
+  // 1st Check:-  checking user (followee) exists or not ?
+  const followeeUser = await userModel.findOne({
     username: followeeName,
   });
 
-  if (!isFolloweeExists) {
+  if (!followeeUser) {
     return res.status(404).json({
       message: "user not exists",
     });
   }
 
+  const followeeId = followeeUser._id;
+
+  // 2nd Check:- can't follow yourself
+  if (followeeId.toString() === followerId.toString()) {
+    return res.status(409).json({
+      message: "you can't follow yourself",
+    });
+  }
+
   // 3rd Check:- checking does user already followed it or not.
   const isAlreadyFollowed = await followModel.findOne({
-    follower: followerName,
-    followee: followeeName,
+    follower: followerId,
+    followee: followeeId,
   });
 
   if (isAlreadyFollowed) {
@@ -36,34 +38,36 @@ async function followUserController(req, res) {
   }
 
   const followingData = await followModel.create({
-    follower: followerName,
-    followee: followeeName,
+    follower: followerId,
+    followee: followeeId,
     status: "pending",
   });
 
   res.status(201).json({
-    message: `${followerName} now follows ${followeeName}`,
+    message: `you now follow ${followeeName}`,
     data: followingData,
   });
 }
 
 async function unfollowUserController(req, res) {
-  const followerName = req.user.username;
+  const followerId = req.user.user;
   const followeeName = req.params.username;
 
-  const isFolloweeExists = await userModel.findOne({
+  const followeeUser = await userModel.findOne({
     username: followeeName,
   });
 
-  if (!isFolloweeExists) {
+  if (!followeeUser) {
     return res.status(404).json({
       message: "user not exists",
     });
   }
 
+  const followeeId = followeeUser._id;
+
   const isUserBeginFollowed = await followModel.findOne({
-    follower: followerName,
-    followee: followeeName,
+    follower: followerId,
+    followee: followeeId,
   });
 
   if (!isUserBeginFollowed) {
@@ -83,27 +87,29 @@ async function unfollowUserController(req, res) {
 
 async function updateFollowStatusController(req, res) {
   const followerName = req.params.username;
-  const followeeName = req.user.username;
+  const followeeId = req.user.user; // The logged in user is the followee approving the request
   const { status } = req.body;
 
-  const isFolloweeExists = await userModel.findOne({
-    username: followeeName,
+  const followerUser = await userModel.findOne({
+    username: followerName,
   });
 
-  if (!isFolloweeExists) {
+  if (!followerUser) {
     return res.status(404).json({
-      message: "followee not exists",
+      message: "follower not exists",
     });
   }
 
+  const followerId = followerUser._id;
+
   const isFolloweeFollows = await followModel.findOne({
-    followee: followeeName,
-    follower: followerName,
+    followee: followeeId,
+    follower: followerId,
   });
 
   if (!isFolloweeFollows) {
     return res.status(404).json({
-      message: `${followeeName} not follows ${followerName}`,
+      message: `${followerName} has not requested to follow you`,
     });
   }
 
@@ -128,13 +134,20 @@ async function updateFollowStatusController(req, res) {
 async function getFollowCount(req, res) {
   const { username } = req.params;
 
+  const user = await userModel.findOne({ username });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  const userId = user._id;
+
   const followeeCount = await followModel.countDocuments({
-    follower: username,
+    follower: userId,
     status: "accepted",
   });
 
   const followerCount = await followModel.countDocuments({
-    followee: username,
+    followee: userId,
     status: "accepted",
   });
 
@@ -148,42 +161,74 @@ async function getFollowCount(req, res) {
 async function getFollowingUserList(req, res) {
   const { username } = req.params;
 
+  const user = await userModel.findOne({ username });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
   const followeeList = await followModel.find({
-    follower: username,
+    follower: user._id,
     status: "accepted",
-  });
+  }).populate("followee", "username profilePicture createdAt");
+
+  // Map to a cleaner format if necessary, or just return as is
+  // Using the populated followee document as the user object for the frontend
+  const formattedList = followeeList.map(item => ({
+    ...item.followee.toObject(),
+    followDate: item.createdAt
+  }));
 
   res.status(200).json({
     message: "fetched following Data",
-    followeeList,
+    followeeList: formattedList,
   });
 }
 
 async function getFollowerUserList(req, res) {
   const { username } = req.params;
 
+  const user = await userModel.findOne({ username });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
   const followerList = await followModel.find({
-    followee: username,
+    followee: user._id,
     status: "accepted",
-  });
+  }).populate("follower", "username profilePicture createdAt");
+
+  const formattedList = followerList.map(item => ({
+    ...item.follower.toObject(),
+    followDate: item.createdAt
+  }));
 
   res.status(200).json({
     message: "fetched follower Data",
-    followerList,
+    followerList: formattedList,
   });
 }
 
-async function getFollowPendingUserList(req, res) {
+async function getFollowPendingList(req, res) {
   const { username } = req.params;
 
+  const user = await userModel.findOne({ username });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
   const followPendingList = await followModel.find({
-    followee: username,
+    followee: user._id,
     status: "pending",
-  });
+  }).populate("follower", "username profilePicture createdAt");
+
+  const formattedList = followPendingList.map(item => ({
+    ...item.follower.toObject(),
+    followDate: item.createdAt
+  }));
 
   res.status(200).json({
     message: "fetched follow pending Data",
-    followPendingList,
+    followPendingList: formattedList,
   });
 }
 
@@ -194,5 +239,5 @@ module.exports = {
   getFollowCount,
   getFollowingUserList,
   getFollowerUserList,
-  getFollowPendingUserList,
+  getFollowPendingUserList: getFollowPendingList,
 };
