@@ -27,11 +27,11 @@ followRoute.post(
 );
 
 /**
- * @route POST /api/users/status/:username
+ * @route patch /api/users/status/:username
  * @description update follow status
  * @access Private
  */
-followRoute.post(
+followRoute.patch(
   "/status/:username",
   identifyUser,
   followController.updateFollowStatusController,

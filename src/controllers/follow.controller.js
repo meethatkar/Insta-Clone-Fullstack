@@ -120,7 +120,7 @@ async function updateFollowStatusController(req, res) {
     },
     {
       runValidators: true,
-      returnDocument: "after",
+      new: true,
     },
   );
 
