@@ -208,10 +208,37 @@ async function editProfile(req, res) {
   })
 }
 
+async function resetPassword(req, res) {
+  const { username, password } = req.body;
+
+  const response = await accountModel.findOne({
+    username
+  });
+
+  if (!response) {
+    return res.status(404).json({
+      message: "user not found"
+    })
+  }
+
+  const hashsedPassword = await bcrypt.hash(password, 10);
+
+  const updatedResponse = await accountModel.findOneAndUpdate({
+    username
+  }, {
+    password: hashsedPassword
+  })
+
+  return res.status(201).json({
+    message: "password updated successfully"
+  });
+}
+
 module.exports = {
   registerController,
   loginController,
   getLoggedInUserController,
   logoutController,
-  editProfile
+  editProfile,
+  resetPassword
 };

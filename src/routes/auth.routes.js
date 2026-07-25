@@ -54,4 +54,15 @@ authRouter.put(
   authController.editProfile
 )
 
+
+/**
+ * @route POST /api/auth/reset-password
+ * @description edit user's password
+ * @access Public
+ */
+authRouter.put(
+  "/reset-password",
+  authController.resetPassword
+)
+
 module.exports = authRouter;
