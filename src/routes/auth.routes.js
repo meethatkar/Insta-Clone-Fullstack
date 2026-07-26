@@ -21,14 +21,14 @@ authRouter.post("/register", authController.registerController);
 authRouter.post("/login", authController.loginController);
 
 /**
- * @route GET /api/auth/get-me
+ * @route GET /api/auth/get-me/:username
  * @description get currently logged in user's information
  * @access Private
  */
 authRouter.get(
-  "/get-me",
+  "/get-me/:username",
   identifyUser,
-  authController.getLoggedInUserController,
+  authController.getUserDataController,
 );
 
 /**

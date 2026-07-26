@@ -85,6 +85,42 @@ async function unfollowUserController(req, res) {
   });
 }
 
+async function removeFollowerController(req, res) {
+  const followeeId = req.user.user;
+  const followerName = req.params.username;
+
+  const followerUser = await userModel.findOne({
+    username: followerName,
+  });
+
+  if (!followerUser) {
+    return res.status(404).json({
+      message: "user not exists",
+    });
+  }
+
+  const followerId = followerUser._id;
+
+  const isUserBeginFollowed = await followModel.findOne({
+    follower: followerId,
+    followee: followeeId,
+  });
+
+  if (!isUserBeginFollowed) {
+    return res.status(404).json({
+      message: `${followerName} is not following you`,
+    });
+  }
+
+  await followModel.findByIdAndDelete({
+    _id: isUserBeginFollowed._id,
+  });
+
+  res.status(200).json({
+    message: `you have removed ${followerName} from your followers`,
+  });
+}
+
 async function updateFollowStatusController(req, res) {
   const followerName = req.params.username;
   const followeeId = req.user.user; // The logged in user is the followee approving the request
@@ -220,15 +256,11 @@ async function getFollowPendingList(req, res) {
     followee: user._id,
     status: "pending",
   }).populate("follower", "username profilePicture createdAt");
-  console.log("PENDING LIST:: ", followPendingList);
 
   const formattedList = followPendingList.map(item => ({
     ...item.follower.toObject(),
     followDate: item.createdAt
   }));
-
-  console.log("FORMATTED LIST:: ", formattedList);
-
 
   res.status(200).json({
     message: "fetched follow pending Data",
@@ -239,6 +271,7 @@ async function getFollowPendingList(req, res) {
 module.exports = {
   followUserController,
   unfollowUserController,
+  removeFollowerController,
   updateFollowStatusController,
   getFollowCount,
   getFollowingUserList,

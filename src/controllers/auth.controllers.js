@@ -115,8 +115,8 @@ async function loginController(req, res) {
   });
 }
 
-async function getLoggedInUserController(req, res) {
-  const username = req.user.username;
+async function getUserDataController(req, res) {
+  const username = req.params.username;
 
   const accountData = await accountModel.findOne({
     username: username,
@@ -237,7 +237,7 @@ async function resetPassword(req, res) {
 module.exports = {
   registerController,
   loginController,
-  getLoggedInUserController,
+  getUserDataController,
   logoutController,
   editProfile,
   resetPassword

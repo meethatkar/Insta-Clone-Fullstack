@@ -27,6 +27,17 @@ followRoute.post(
 );
 
 /**
+ * @route POST /api/users/remove-follower/:username
+ * @description remove a follower
+ * @access Private
+ */
+followRoute.post(
+  "/remove-follower/:username",
+  identifyUser,
+  followController.removeFollowerController,
+);
+
+/**
  * @route patch /api/users/status/:username
  * @description update follow status
  * @access Private
