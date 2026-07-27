@@ -209,10 +209,10 @@ async function editProfile(req, res) {
 }
 
 async function resetPassword(req, res) {
-  const { username, password } = req.body;
+  const { userInfo, password } = req.body;
 
   const response = await accountModel.findOne({
-    username
+    $or: [{ username: userInfo }, { email: userInfo }],
   });
 
   if (!response) {
@@ -223,11 +223,10 @@ async function resetPassword(req, res) {
 
   const hashsedPassword = await bcrypt.hash(password, 10);
 
-  const updatedResponse = await accountModel.findOneAndUpdate({
-    username
-  }, {
-    password: hashsedPassword
-  })
+  const updatedResponse = await accountModel.findByIdAndUpdate(
+    response._id,
+    { password: hashsedPassword }
+  );
 
   return res.status(201).json({
     message: "password updated successfully"
