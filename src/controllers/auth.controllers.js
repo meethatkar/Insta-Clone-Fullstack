@@ -64,10 +64,10 @@ async function registerController(req, res) {
 }
 
 async function loginController(req, res) {
-  const { username, email, password } = req.body;
+  const { userInfo, password } = req.body;
 
   const isUserExisted = await accountModel.findOne({
-    $or: [{ username }, { email }],
+    $or: [{ username: userInfo }, { email: userInfo }],
   });
 
   if (!isUserExisted) {
